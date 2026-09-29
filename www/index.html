@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ZenFit — Workout & Yoga</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Frame 1 check: distinguish fresh app download vs returning athlete
+    try {
+      if (localStorage.getItem('fitly_setup_complete') === 'true') {
+        document.documentElement.classList.add('user-returning');
+      } else {
+        document.documentElement.classList.add('user-new');
+      }
+    } catch (e) {
+      document.documentElement.classList.add('user-new');
+    }
+  </script>
+</head>
+<body>
+<div class="app-container">
+
+<!-- ─────────────────── WELCOME / FIRST LOGIN SCREEN ─────────────────── -->
+<div class="screen" id="screen-splash" style="background: #ffffff; z-index: 100; overflow-y: auto;">
+  <div class="welcome-container">
+    
+    <!-- Top Brand Logo -->
+    <div class="welcome-hero">
+      <div class="welcome-logo-badge">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#001F3F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 5v14M18 5v14M2 9h4M18 9h4M2 15h4M18 15h4M6 12h12" />
+        </svg>
+      </div>
+      <h1 class="welcome-brand-title">FITLY</h1>
+      <p class="welcome-tagline">Smart Workouts &amp; AI Nutrition Coach</p>
+    </div>
+
+    <!-- Highlights Card -->
+    <div class="welcome-features-card">
+      <div class="welcome-feat-item">
+        <div class="feat-icon-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#001F3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div class="feat-text-box">
+          <h4>Personalized AI Workouts</h4>
+          <p>Adaptive exercise routines matched to your goals</p>
+        </div>
+      </div>
+
+      <div class="welcome-feat-item">
+        <div class="feat-icon-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#001F3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="feat-text-box">
+          <h4>Calorie &amp; Macro Intelligence</h4>
+          <p>Science-backed metabolic calculations and logging</p>
+        </div>
+      </div>
+
+      <div class="welcome-feat-item">
+        <div class="feat-icon-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#001F3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <div class="feat-text-box">
+          <h4>Studio Workout Music</h4>
+          <p>Dynamic Island beats with AI Coach voice ducking</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Primary Login Options -->
+    <div class="welcome-actions">
+      <button class="btn-welcome-primary" onclick="AuthService.openSignInModal('signin')">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Sign In
+      </button>
+      
+      <button class="btn-welcome-guest" onclick="AuthService.continueAsGuest()">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Continue as Guest
+      </button>
+
+      <p class="welcome-disclaimer">
+        Guest accounts store data securely on this device. You can connect an account anytime.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Sign In / Register Modal Sheet -->
+  <div class="auth-modal" id="auth-modal">
+    <div class="auth-modal-backdrop" onclick="AuthService.closeSignInModal()"></div>
+    <div class="auth-modal-sheet">
+      <div class="auth-sheet-handle"></div>
+      
+      <div class="auth-tabs-row">
+        <button class="auth-tab auth-tab--active" id="auth-tab-signin" onclick="AuthService.setMode('signin')">Sign In</button>
+        <button class="auth-tab" id="auth-tab-signup" onclick="AuthService.setMode('signup')">Create Account</button>
+      </div>
+
+      <div class="auth-header-text">
+        <h3 id="auth-modal-title">Sign In</h3>
+        <p id="auth-modal-sub">Access your synced workouts &amp; nutrition</p>
+      </div>
+
+      <div class="auth-form-fields">
+        <div class="auth-field">
+          <label>Email or Username</label>
+          <div class="auth-input-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <input type="email" id="auth-email" placeholder="alex@example.com" autocomplete="email" />
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label>Password</label>
+          <div class="auth-input-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="auth-password" placeholder="••••••••" />
+            <button type="button" class="auth-eye-btn" onclick="AuthService.togglePasswordVisibility()" aria-label="Toggle password visibility">
+              <svg id="auth-eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-welcome-primary" id="auth-submit-btn" onclick="AuthService.handleAuthSubmit()" style="margin-top: 20px;">
+        Sign In &amp; Continue
+      </button>
+
+      <button class="auth-cancel-btn" onclick="AuthService.closeSignInModal()">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────── BASIC PROFILE QUESTIONS (FOR BOTH USERS) ─────────────────── -->
+<div class="screen" id="screen-onboarding" style="background: #ffffff; z-index: 100; overflow-y: auto;">
+  <main class="scroll-container" style="padding: 48px 24px 100px;">
+    
+    <div style="margin-bottom: 24px;">
+      <span style="display:inline-block; font-size:0.75rem; font-weight:800; color:#001F3F; background:#e6f0fa; padding:4px 12px; border-radius:20px; letter-spacing:1px; margin-bottom:12px; text-transform:uppercase;">
+        Athlete Calibration
+      </span>
+      <h1 style="font-size: 2rem; font-weight: 800; color: #001F3F; line-height: 1.15; margin-bottom: 8px; letter-spacing: -0.5px;">Set Up Your Profile</h1>
+      <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin:0;">These baseline metrics allow FITLY to compute your exact metabolic burn, daily calories, and exercise intensity.</p>
+    </div>
+    
+    <div class="ob-cards-container">
+      
+      <!-- Choose Avatar or Photo -->
+      <div class="ob-field-card" style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+        <div>
+          <label class="ob-label" style="margin-bottom:4px;">Athlete Avatar</label>
+          <p style="font-size:0.8rem; color:#64748b; margin:0;">Pick a persona or upload your picture</p>
+        </div>
+        <div onclick="AvatarService.openModal()" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <div id="ob-avatar-preview" style="width:52px; height:52px; border-radius:50%; overflow:hidden; border:2px solid #001F3F; box-shadow:0 4px 10px rgba(0,31,63,0.15); flex-shrink:0;"></div>
+          <button type="button" class="btn-ob-avatar-change" onclick="event.stopPropagation(); AvatarService.openModal();">
+            Change
+          </button>
+        </div>
+      </div>
+
+      <!-- Athlete Name -->
+      <div class="ob-field-card">
+        <label class="ob-label">Your Name or Nickname</label>
+        <input type="text" id="ob-name" placeholder="E.g. Alex" class="ob-input">
+      </div>
+
+      <!-- Gender Selection -->
+      <div class="ob-field-card">
+        <label class="ob-label">Biological Gender</label>
+        <div class="ob-gender-buttons">
+          <button type="button" class="ob-gender-btn active" data-gender="male" onclick="setObGender('male', this)">Male</button>
+          <button type="button" class="ob-gender-btn" data-gender="female" onclick="setObGender('female', this)">Female</button>
+          <button type="button" class="ob-gender-btn" data-gender="other" onclick="setObGender('other', this)">Other</button>
+        </div>
+        <input type="hidden" id="ob-gender" value="male">
+      </div>
+
+      <!-- Age, Height & Weight in a 3-column grid -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+        <div class="ob-field-card" style="padding: 12px 10px;">
+          <label class="ob-label" style="text-align:center;">Age</label>
+          <input type="number" id="ob-age" placeholder="25" class="ob-input" style="padding: 10px; text-align:center;">
+        </div>
+        <div class="ob-field-card" style="padding: 12px 10px;">
+          <label class="ob-label" style="text-align:center;">Height (cm)</label>
+          <input type="number" id="ob-height" placeholder="175" class="ob-input" style="padding: 10px; text-align:center;">
+        </div>
+        <div class="ob-field-card" style="padding: 12px 10px;">
+          <label class="ob-label" style="text-align:center;">Weight (kg)</label>
+          <input type="number" id="ob-weight" placeholder="70" class="ob-input" style="padding: 10px; text-align:center;">
+        </div>
+      </div>
+
+      <!-- Target Weight -->
+      <div class="ob-field-card">
+        <label class="ob-label">Target Goal Weight (kg)</label>
+        <input type="number" id="ob-target" placeholder="65" class="ob-input">
+      </div>
+
+      <!-- Activity Level -->
+      <div class="ob-field-card">
+        <label class="ob-label">Daily Activity Level</label>
+        <select id="ob-activity" class="ob-select">
+          <option value="sedentary">Sedentary (Little or no exercise)</option>
+          <option value="light">Lightly Active (Exercise 1-3 days/week)</option>
+          <option value="moderate" selected>Moderately Active (Exercise 3-5 days/week)</option>
+          <option value="active">Active (Heavy exercise 6-7 days/week)</option>
+          <option value="very">Very Active (Physical job or 2x daily training)</option>
+        </select>
+      </div>
+
+      <!-- Primary Fitness Goal -->
+      <div class="ob-field-card">
+        <label class="ob-label">Primary Fitness Goal</label>
+        <select id="ob-goal" class="ob-select">
+          <option value="lose">Lose Weight (Caloric deficit &amp; fat burn)</option>
+          <option value="maintain">Maintain Weight &amp; Overall Health</option>
+          <option value="gain">Build Muscle (Hypertrophy &amp; strength)</option>
+        </select>
+      </div>
+
+    </div>
+
+    <button onclick="submitOnboarding()" class="btn-welcome-primary" style="margin-top: 28px; width: 100%; justify-content: center; gap: 8px;">
+      <span>Save Profile &amp; Start Training</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </main>
+</div>
+
+<!-- ─────────────────── HOME / DASHBOARD ─────────────────── -->
+<div class="screen active" id="screen-home">
+  <div class="status-bar"></div>
+
+  <!-- Hero Header -->
+  <header class="home-header">
+    <div class="header-top">
+      <div class="user-greeting">
+        <div class="avatar" onclick="AvatarService.openModal()" style="cursor:pointer;" title="Change Avatar">
+          <div id="home-greeting-avatar" style="width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"></div>
+        </div>
+        <div>
+          <p class="greeting-sub" style="color: var(--text-2); font-weight: 500; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Today's Focus: Strength</p>
+          <h2 class="greeting-name" style="color: var(--text-1); font-weight: 700;">Welcome Back, <span id="home-greeting-name">Athlete</span>!</h2>
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- Daily Streak -->
+    <div class="streak-pill" style="background: var(--purple-light); color: var(--purple); border: none;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="margin-right: 6px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <span class="streak-text" id="home-streak-pill" style="font-weight: 600;">0-day streak</span>
+    </div>
+  </header>
+
+  <main class="home-main scroll-container">
+
+    <!-- Today's Executive Dashboard -->
+    <section class="today-summary">
+      <div class="summary-card">
+        
+        <!-- Card Top Header: Badge & Date & Streak -->
+        <div class="summary-top-bar">
+          <div class="summary-title-wrap">
+            <span class="summary-badge">TODAY'S OVERVIEW</span>
+            <span id="home-card-date" class="summary-date">Today</span>
+          </div>
+          <div class="summary-streak-tag">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#F59E0B"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span id="home-streak-tag">0d streak</span>
+          </div>
+        </div>
+
+        <!-- Middle Body: Glowing Progress Ring + 3 Metrics -->
+        <div class="summary-body">
+          <div class="progress-ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 120 120">
+              <circle class="ring-track" cx="60" cy="60" r="50" />
+              <circle id="home-ring-fill" class="ring-fill ring-fill--workout" cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16" />
+            </svg>
+            <div class="ring-center">
+              <span class="ring-value"><span id="home-ring-pct">0</span><span class="ring-unit">%</span></span>
+              <span class="ring-label">GOAL</span>
+            </div>
+          </div>
+
+          <div class="summary-metrics-grid">
+            <div class="metric-box">
+              <div class="metric-icon-wrap metric-icon--burn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-val"><span id="home-stat-burn">0</span> <small>kcal</small></span>
+                <span class="metric-lbl">Active Burn</span>
+              </div>
+            </div>
+
+            <div class="metric-box">
+              <div class="metric-icon-wrap metric-icon--time">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-val"><span id="home-stat-mins">0</span> <small>min</small></span>
+                <span class="metric-lbl">Active Time</span>
+              </div>
+            </div>
+
+            <div class="metric-box">
+              <div class="metric-icon-wrap metric-icon--count">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-2.34c0-.3.12-.58.33-.78L8 12.2"/><path d="M14 14.66V17c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2.34c0-.3-.12-.58-.33-.78L16 12.2"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+              </div>
+              <div class="metric-details">
+                <span class="metric-val"><span id="home-stat-count">0</span> <small>done</small></span>
+                <span class="metric-lbl">Workouts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom: Diet / Nutrition Calorie Bar -->
+        <div class="summary-calorie-bar">
+          <div class="calorie-bar-header">
+            <div class="cal-item">
+              <span class="cal-lbl">Calories Eaten</span>
+              <span class="cal-num"><strong id="home-cal-eaten">0</strong> <small>kcal</small></span>
+            </div>
+            <div class="cal-divider"></div>
+            <div class="cal-item">
+              <span class="cal-lbl">Daily Target</span>
+              <span class="cal-num"><strong id="home-cal-target">2,000</strong> <small>kcal</small></span>
+            </div>
+            <div class="cal-divider"></div>
+            <div class="cal-item">
+              <span class="cal-lbl">Remaining</span>
+              <span class="cal-num cal-num--rem"><strong id="home-cal-remaining">2,000</strong> <small>left</small></span>
+            </div>
+          </div>
+          
+          <div class="cal-progress-track">
+            <div id="home-diet-progress" class="cal-progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="section">
+      <h3 class="section-title">Quick Start</h3>
+      <div class="quick-grid">
+        <button class="quick-card quick-card--yoga" onclick="openCategoryExercises('yoga')">
+          <div class="quick-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1.5 3.5-3.5 6.5-7 8 3.5 1.5 5.5 4.5 7 9 1.5-4.5 3.5-7.5 7-9-3.5-1.5-5.5-4.5-7-8Z"/><path d="M12 11c-2.5-2.5-5.5-3.5-9-3 2.5 3 3.5 6 2 9.5 3.5-1 5.5-3 7-6.5Z"/><path d="M12 11c2.5-2.5 5.5-3.5 9-3-2.5 3-3.5 6-2 9.5-3.5-1-5.5-3-7-6.5Z"/></svg></div>
+          <span>Yoga Flow</span>
+        </button>
+        <button class="quick-card quick-card--hiit" onclick="openCategoryExercises('hiit')">
+          <div class="quick-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3 4 5 4 9a6 6 0 1 1-12 0c0-4 3-6 4-9 1 2 2 3 4 0Z"/><path d="M12 14a2 2 0 0 0 2-2c0-1.5-1-2-2-3-1 1-2 1.5-2 3a2 2 0 0 0 2 2Z"/></svg></div>
+          <span>HIIT Burn</span>
+        </button>
+        <button class="quick-card quick-card--strength" onclick="openCategoryExercises('strength')">
+          <div class="quick-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="9" width="2" height="6" rx="1"/><rect x="5" y="5" width="2" height="14" rx="1"/><line x1="7" y1="12" x2="17" y2="12"/><rect x="17" y="5" width="2" height="14" rx="1"/><rect x="20" y="9" width="2" height="6" rx="1"/></svg></div>
+          <span>Strength</span>
+        </button>
+        <button class="quick-card quick-card--calm" onclick="openCategoryExercises('calm')">
+          <div class="quick-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/></svg></div>
+          <span>Calm &amp; Breathe</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- AI Quick Actions Twin Grid -->
+    <section class="section" style="margin-top: 14px;">
+      <div class="ai-twin-grid">
+        <button class="ai-twin-card ai-twin-card--workout" onclick="navigate('ai-workout')">
+          <div class="ai-twin-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </div>
+          <div class="ai-twin-info">
+            <span class="ai-twin-title">AI Workout</span>
+            <span class="ai-twin-sub">Custom Routine</span>
+          </div>
+        </button>
+        
+        <button class="ai-twin-card ai-twin-card--scan" onclick="document.getElementById('diet-file-input').click()">
+          <div class="ai-twin-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div class="ai-twin-info">
+            <span class="ai-twin-title">Scan Meal</span>
+            <span class="ai-twin-sub">AI Nutrition Log</span>
+          </div>
+        </button>
+      </div>
+    </section>
+
+
+
+
+    <!-- Weekly Activity Chart -->
+    <section class="section">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+        <h3 class="section-title" style="margin-bottom:0;">This Week</h3>
+        <span id="weekly-chart-range" style="font-size:0.75rem; color:var(--text-3); font-weight:600;"></span>
+      </div>
+      <div class="weekly-chart-card">
+        <div class="chart-bars" id="weekly-chart-bars">
+          <!-- Populated dynamically by AppDataUI.renderWeeklyChart() -->
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot legend-dot--done"></span>Done</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--active"></span>Today</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--rest"></span>Rest</div>
+        </div>
+        <div id="weekly-day-details" class="weekly-day-details">
+          <!-- Populated dynamically when user selects a day -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Spacer for nav -->
+    <div style="height: 96px;"></div>
+  </main>
+
+  
+</div>
+
+<!-- ─────────────────── EXPLORE ─────────────────── -->
+<div class="screen" id="screen-explore">
+  <div class="status-bar"></div>
+  <header class="page-header">
+    <button class="back-btn" onclick="navigate('home')" aria-label="Go back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h2>Explore</h2>
+    
+  </header>
+
+  
+  <div style="padding: 0 24px 16px;">
+    <button onclick="navigate('ai-workout')" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; background: linear-gradient(135deg, var(--purple) 0%, #1a365d 100%); color: #fff; padding: 16px; border-radius: var(--r-md); border: none; font-size: 1.05rem; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-sm);">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      Generate AI Workout
+    </button>
+  </div>
+<div class="search-bar-wrap">
+    <div class="search-bar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="explore-search" placeholder="Search workouts, yoga, programs…" aria-label="Search" />
+    </div>
+  </div>
+
+  <div class="filter-chips scroll-x" id="explore-chips">
+    <button class="chip chip--active" data-filter="all">All</button>
+    <button class="chip" data-filter="yoga">Yoga Flow</button>
+    <button class="chip" data-filter="strength">Strength</button>
+    <button class="chip" data-filter="hiit">HIIT Burn</button>
+    <button class="chip" data-filter="calm">Calm &amp; Breathe</button>
+    <button class="chip" data-filter="cardio">Cardio</button>
+    <button class="chip" data-filter="core">Core</button>
+    <button class="chip" data-filter="equipment">With Equipment</button>
+  </div>
+
+  <main class="explore-main scroll-container" id="explore-main">
+    <div class="equipment-banner" style="background:var(--bg); border: 1px solid var(--border); color:var(--text-1); margin: 0 20px 12px 20px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <p id="explore-banner-text" style="font-weight: 500; font-size: 0.9rem;">Browse curated exercises. Tap any to view animation and instructions.</p>
+    </div>
+    
+    <section class="section">
+      <div class="list-cards" id="explore-cards">
+        <!-- JS will render the 150 exercises here -->
+      </div>
+    </section>
+
+    <div style="height: 96px;"></div>
+  </main>
+
+  
+</div>
+
+<!-- ─────────────────── ROUTINE PREVIEW ─────────────────── -->
+<div class="screen" id="screen-routine-preview">
+  <div class="status-bar"></div>
+  <header class="page-header">
+    <button class="back-btn" onclick="navigate('ai-workout')" aria-label="Go back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h2>Your AI Plan</h2>
+    <div style="width:20px;"></div>
+  </header>
+
+  <main class="scroll-container" style="padding-bottom: 140px;">
+    <div style="padding: 20px 24px;">
+      <h1 id="preview-title" style="font-size: 1.8rem; font-weight: 700; color: var(--text-1); margin-bottom: 12px; line-height: 1.2;">Workout Title</h1>
+      <div style="display:flex; gap:8px; margin-bottom: 16px; flex-wrap: wrap;">
+        <span class="chip" style="pointer-events:none; padding: 6px 12px; font-size: 0.85rem;" id="preview-duration">0 min</span>
+      </div>
+      <p id="preview-reason" style="color: var(--text-2); font-size: 0.95rem; line-height: 1.5; margin-bottom: 24px;">Reasoning here...</p>
+      
+      <h3 style="font-size: 1.2rem; margin-bottom: 16px; color: var(--text-1);">Exercises</h3>
+      <div id="preview-exercise-list" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Dynamic content -->
+      </div>
+    </div>
+  </main>
+
+  <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 24px 40px; background: linear-gradient(to top, var(--bg) 70%, transparent); display: flex; justify-content: center; z-index: 10;">
+    <button class="btn btn--primary" style="width: 100%; font-size: 1.1rem; padding: 18px; box-shadow: 0 8px 16px rgba(0,0,0,0.1);" onclick="confirmAndStartRoutine()">
+      Start Session
+    </button>
+  </div>
+</div>
+
+<!-- ─────────────────── GEMINI VOICE ASSISTANT ─────────────────── -->
+<div class="screen" id="screen-voice-assistant">
+  <div class="status-bar"></div>
+  <header class="page-header" style="justify-content:space-between; padding: 12px 20px;">
+    <button class="back-btn" onclick="navigate('home')" aria-label="Go back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h2 style="font-size:1.15rem; font-weight:800; color:#001F3F; margin:0;">Voice Assistant</h2>
+    <button id="voice-api-badge" onclick="VoiceAssistant.promptApiKey()" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:20px; padding:4px 10px; font-size:0.75rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
+      <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10B981;"></span> AI Coach
+    </button>
+  </header>
+
+  <main class="scroll-container" style="padding-bottom: 120px;">
+    <div style="padding: 16px 20px;">
+
+      <!-- Glowing Voice Orb & Assistant Question -->
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 20px 0 16px;">
+        <div class="voice-orb-wrap">
+          <div id="voice-orb" class="voice-orb voice-orb--idle">
+            <div class="voice-orb-core"></div>
+            <div class="voice-orb-wave wave-1"></div>
+            <div class="voice-orb-wave wave-2"></div>
+            <div class="voice-orb-wave wave-3"></div>
+          </div>
+        </div>
+
+        <div class="voice-speech-bubble" style="margin-top:16px; background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:14px 18px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.04); max-width:320px;">
+          <h3 id="voice-assistant-question" style="margin:0; font-size:1.05rem; font-weight:700; color:#001F3F; line-height:1.4;">What do you want to do today, or how are you feeling?</h3>
+          <p id="voice-status-text" style="margin:6px 0 0; font-size:0.8rem; color:#64748b;">Tap the mic to speak, or type your goal below.</p>
+        </div>
+      </div>
+
+      <!-- Interactive Mic Button -->
+      <div style="display:flex; justify-content:center; margin-bottom: 20px;">
+        <button id="voice-mic-btn" class="voice-mic-btn" onclick="VoiceAssistant.toggleListen()" aria-label="Microphone">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" x2="12" y1="19" y2="22"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Voice / Text input box -->
+      <div style="position:relative; margin-bottom: 16px;">
+        <input type="text" id="voice-text-input" placeholder="e.g. Stressed &amp; tight neck, or 15 min core blast..." style="width:100%; padding:14px 50px 14px 16px; border:2px solid #e2e8f0; border-radius:12px; font-size:0.95rem; font-weight:600; outline:none; font-family:inherit; background:#fff; color:#0f172a; box-sizing:border-box;">
+        <button onclick="VoiceAssistant.submitText()" aria-label="Send" style="position:absolute; right:8px; top:8px; bottom:8px; width:36px; background:#001F3F; color:#fff; border:none; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+
+      <!-- Quick prompts -->
+      <div style="margin-bottom:24px;">
+        <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#94a3b8; letter-spacing:0.5px;">Quick Prompts</span>
+        <div class="filter-chips" style="flex-wrap:wrap; margin-top:8px; gap:8px;">
+          <button class="chip" onclick="VoiceAssistant.useQuickPrompt('Stressed and stiff neck, need a calm relaxing stretch')">🧘 Stressed &amp; Stiff</button>
+          <button class="chip" onclick="VoiceAssistant.useQuickPrompt('Full of energy! Give me an intense 20-minute HIIT cardio burn')">⚡ 20-Min HIIT Burn</button>
+          <button class="chip" onclick="VoiceAssistant.useQuickPrompt('Tired and sore legs, want light restorative yoga')">🌿 Tired &amp; Sore Recovery</button>
+          <button class="chip" onclick="VoiceAssistant.useQuickPrompt('Upper body chest and shoulders strength workout with dumbbells')">🏋️ Upper Body Strength</button>
+        </div>
+      </div>
+
+      <!-- Recommendations Container -->
+      <div id="voice-results-container" style="display:none;"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Voice Loading Overlay -->
+<div id="voice-loading-overlay" style="display:none; position:fixed; inset:0; background:rgba(255,255,255,0.92); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
+  <div class="spinner" style="width:50px; height:50px; border:4px solid rgba(0,31,63,0.1); border-top:4px solid var(--purple); border-radius:50%; animation:spin 1s linear infinite; margin-bottom:20px;"></div>
+  <h3 style="font-size:1.25rem; color:#001F3F; font-weight:800; margin:0 0 6px;">Designing your custom routine...</h3>
+  <p style="color:#64748b; font-size:0.9rem; text-align:center; margin:0;">Analyzing your energy and body needs for the perfect exercises.</p>
+</div>
+
+<!-- ─────────────────── AI WORKOUT GENERATOR ─────────────────── -->
+<div class="screen" id="screen-ai-workout">
+  <div class="status-bar"></div>
+  <header class="page-header">
+    <button class="back-btn" onclick="navigate('explore')" aria-label="Go back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h2>AI Workout</h2>
+    <div style="width:20px;"></div>
+  </header>
+
+  <main class="scroll-container" style="padding-bottom: 120px;">
+    <div style="padding: 20px 24px;">
+      
+      <!-- Mood -->
+      <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--text-1);">How are you feeling?</h3>
+      <div class="filter-chips" id="ai-mood-chips" style="flex-wrap: wrap; margin-bottom: 24px; overflow:visible;">
+        <button class="chip chip--active" onclick="AiWorkoutUI.select(this, 'mood', 'energetic')">Energetic</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'mood', 'tired')">Tired</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'mood', 'stressed')">Stressed</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'mood', 'motivated')">Motivated</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'mood', 'sore')">Sore/Recovering</button>
+      </div>
+
+      <!-- Time -->
+      <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--text-1);">Time available (min)</h3>
+      <div class="filter-chips" id="ai-time-chips" style="flex-wrap: wrap; margin-bottom: 24px; overflow:visible;">
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'time', 10)">10</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'time', 20)">20</button>
+        <button class="chip chip--active" onclick="AiWorkoutUI.select(this, 'time', 30)">30</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'time', 45)">45</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'time', 60)">60</button>
+      </div>
+
+      <!-- Target -->
+      <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--text-1);">Fitness Target</h3>
+      <div class="filter-chips" id="ai-target-chips" style="flex-wrap: wrap; margin-bottom: 24px; overflow:visible;">
+        <button class="chip chip--active" onclick="AiWorkoutUI.select(this, 'target', 'weight loss')">Weight Loss</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'target', 'strength')">Strength</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'target', 'flexibility')">Flexibility</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'target', 'stress relief')">Stress Relief</button>
+        <button class="chip" onclick="AiWorkoutUI.select(this, 'target', 'general fitness')">General Fitness</button>
+      </div>
+
+      <!-- Equipment (Multi) -->
+      <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--text-1);">Equipment</h3>
+      <div class="filter-chips" id="ai-equip-chips" style="flex-wrap: wrap; margin-bottom: 24px; overflow:visible;">
+        <button class="chip chip--active" onclick="AiWorkoutUI.toggleMulti(this, 'body weight')">Bodyweight</button>
+        <button class="chip" onclick="AiWorkoutUI.toggleMulti(this, 'dumbbell')">Dumbbells</button>
+        <button class="chip" onclick="AiWorkoutUI.toggleMulti(this, 'band')">Bands</button>
+        <button class="chip" onclick="AiWorkoutUI.toggleMulti(this, 'kettlebell')">Kettlebell</button>
+        <button class="chip" onclick="AiWorkoutUI.toggleMulti(this, 'cable')">Machine</button>
+        <button class="chip" onclick="AiWorkoutUI.toggleMulti(this, 'yoga mat')">Yoga Mat</button>
+      </div>
+
+      <!-- Avoid -->
+      <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--text-1);">Or just tell me what you want</h3>
+      <textarea id="ai-prompt-input" placeholder="e.g. I want a 15 minute core workout to do before bed, no jumping." style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--r-sm); margin-bottom: 24px; font-family: inherit; font-size: 1rem; background: var(--surface-1); color: var(--text-1); min-height: 80px; resize: none;"></textarea>
+
+      <h3 style="font-size: 1.1rem; margin-bottom: 12px; color: var(--text-1);">Anything to avoid?</h3>
+      <input type="text" id="ai-avoid-input" placeholder="e.g. sore knee, no jumping" style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--r-sm); margin-bottom: 24px; font-family: inherit; font-size: 1rem; background: var(--surface-1); color: var(--text-1);" />
+
+      <button class="btn btn--primary" style="width: 100%; font-size: 1.05rem;" onclick="AiWorkoutService.generate()">
+        Generate Workout
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- AI Loading Overlay -->
+<div id="ai-loading-overlay" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
+  <div class="spinner" style="width:50px; height:50px; border:4px solid rgba(0,31,63,0.1); border-top:4px solid var(--purple); border-radius:50%; animation:spin 1s linear infinite; margin-bottom:24px;"></div>
+  <h2 style="font-size:1.4rem; color:var(--text-1); margin-bottom:8px;">Building your workout...</h2>
+  <p style="color:var(--text-2); text-align:center; line-height:1.5;">Curating the best movements matched to your goals.</p>
+</div>
+<style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+
+<!-- ─────────────────── WORKOUT DETAIL (DYNAMIC) ─────────────────── -->
+<div class="screen" id="screen-workout-detail">
+  <header class="header" style="position:absolute; top:0; left:0; width:100%; z-index:10; background:transparent;">
+    <div class="header-left">
+      <button class="icon-btn icon-btn--light" onclick="navigate('explore')" aria-label="Back" style="background: rgba(0,0,0,0.4); border-radius: 50%; margin: 10px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="scroll-container" style="padding-bottom:120px;">
+    <div style="width:100%;height:300px;background:#0a0a0a;position:relative;overflow:hidden;">
+      <img id="detail-anim-img" src="" alt="Exercise Demo" style="width:100%;height:100%;object-fit:contain;">
+      <div id="detail-muscle-overlay" style="position:absolute;bottom:12px;left:12px;background:rgba(0,0,0,0.6);border-radius:20px;padding:5px 14px;color:#fff;font-size:0.78rem;font-weight:600;letter-spacing:0.5px;text-transform:capitalize;"></div>
+    </div>
+    <div style="padding:20px 24px 8px;">
+      <h2 id="detail-title" style="font-size:1.5rem;font-weight:700;color:var(--text-1);text-transform:capitalize;margin-bottom:10px;">Exercise Name</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <span class="ex-meta-chip" id="detail-level">Body Part</span>
+        <span class="ex-meta-chip ex-meta-chip--gear" id="detail-equipment">Equipment</span>
+        <span class="ex-meta-chip" id="detail-muscle">Muscle</span>
+      </div>
+    </div>
+    <div style="padding:16px 24px 0;">
+      <p style="font-size:0.68rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-3);font-weight:700;margin-bottom:12px;">Muscles Targeted</p>
+      <div id="detail-targets" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+    <div style="padding:20px 24px 0;">
+      <p style="font-size:0.68rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-3);font-weight:700;margin-bottom:14px;">Key Tips</p>
+      <div id="detail-tips" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+    <div style="margin:20px 24px 0;padding:14px 16px;background:var(--surface-2);border-radius:var(--r-md);border-left:3px solid var(--purple);display:flex;align-items:flex-start;gap:12px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <p style="font-size:0.85rem;color:var(--text-2);line-height:1.55;margin:0;">Warm up 2-3 minutes before starting. Stop if you feel sharp pain.</p>
+    </div>
+  </main>
+
+  <div class="action-footer" style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px 24px; background: linear-gradient(to top, var(--bg-color) 70%, transparent);">
+    <button class="btn btn--primary" style="width: 100%;" onclick="startGetReady()">Start Exercise</button>
+  </div>
+</div>
+
+<!-- ─────────────────── ACTIVE SESSION (TIMER) ─────────────────── -->
+<div class="screen" id="screen-get-ready" style="background:#ffffff;">
+  <!-- GIF Background (Subtle) -->
+  <div style="position:absolute; inset:0; z-index:0; display:flex; align-items:flex-start; padding-top: 10%; justify-content:center; opacity:0.06; pointer-events:none;">
+    <img id="ready-gif" src="" style="width:140%; height:80%; object-fit:contain; mix-blend-mode:multiply;" alt="">
+  </div>
+  
+  <div style="position:relative; z-index:3; height:100%; display:flex; flex-direction:column; justify-content:space-between; padding: 60px 24px 40px;">
+    
+    <!-- Top Info -->
+    <div style="text-align:center;">
+      <span style="display:inline-block; background:#e6f0fa; color:#001F3F; font-size:0.75rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; padding:6px 12px; border-radius:6px; margin-bottom:16px;">Up Next</span>
+      <h1 id="ready-title" style="color:#001F3F; font-size:2.4rem; font-weight:800; text-transform:capitalize; line-height:1.1; margin:0; letter-spacing:-0.5px;"></h1>
+    </div>
+    
+    <!-- Countdown Ring -->
+    <div style="display:flex; justify-content:center; align-items:center; flex:1;">
+      <div style="position:relative; width:160px; height:160px;">
+        <svg style="position:absolute; top:0; left:0; transform:rotate(-90deg);" width="160" height="160" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r="74" fill="none" stroke="#f1f5f9" stroke-width="8"/>
+          <circle id="ready-ring" cx="80" cy="80" r="74" fill="none" stroke="#001F3F" stroke-width="8" stroke-dasharray="465" stroke-dashoffset="0" stroke-linecap="round" style="transition:stroke-dashoffset 1s linear;"/>
+        </svg>
+        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+          <span id="ready-countdown" style="color:#001F3F; font-size:4rem; font-weight:800; line-height:1; font-variant-numeric: tabular-nums;">5</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tips & Buttons -->
+    <div>
+      <div id="ready-tips" style="display:flex; flex-direction:column; gap:10px; margin-bottom:32px;"></div>
+      <div style="display:flex; gap:16px;">
+        <button onclick="skipReady()" style="flex:1; height:64px; border-radius:32px; background:#fff; color:#64748b; border:2px solid #e2e8f0; font-size:1.1rem; font-weight:700; cursor:pointer;">Skip</button>
+        <button onclick="beginSession()" style="flex:2; height:64px; border-radius:32px; background:#001F3F; color:#fff; border:none; font-size:1.1rem; font-weight:700; cursor:pointer; box-shadow: 0 10px 25px rgba(0,31,63,0.15);">Start Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-active-session" style="background:#ffffff; overflow: hidden;">
+  
+  <!-- MAIN DEMO (Full Screen) -->
+  <div style="position:absolute; inset:0; z-index:0; display:flex; align-items:center; justify-content:center;">
+    <img id="session-gif" src="" style="width:100%; height:100%; object-fit:contain; mix-blend-mode:multiply; transform: scale(1.1);" alt="">
+  </div>
+  
+  <!-- Top Header Floating -->
+  <div style="position:absolute; top:68px; left:0; width:100%; z-index:10; padding:8px 20px; display:flex; align-items:center; justify-content:space-between;">
+    <button class="icon-btn" onclick="promptEndWorkout()" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); border:1px solid rgba(0,31,63,0.1); border-radius:50%; width: 44px; height: 44px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.05);" aria-label="Back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#001F3F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <!-- Timer -->
+    <div style="background:#001F3F; color:#fff; border-radius:30px; padding:6px 20px; display:flex; align-items:center; gap:8px; box-shadow:0 8px 16px rgba(0,31,63,0.15);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span id="sessionTimer" style="font-size:1.25rem; font-weight:800; letter-spacing:1px; font-variant-numeric: tabular-nums;">00:45</span>
+    </div>
+    <!-- Quick Music Toggle Button -->
+    <button class="icon-btn" onclick="JamendoMusicService.setIslandState('expanded')" style="background:rgba(255,255,255,0.85); backdrop-filter:blur(8px); border:1px solid rgba(0,31,63,0.1); border-radius:50%; width: 44px; height: 44px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.05);" aria-label="Music Player">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#001F3F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
+      </svg>
+    </button>
+  </div>
+  
+  <!-- Bottom HUD (Floating transparent layout) -->
+  <div style="position:absolute; bottom:0; left:0; width:100%; z-index:5; background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%); padding: 60px 24px 24px;">
+    
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 20px;">
+      
+      <!-- Exercise Text (Left) -->
+      <div style="flex:1; padding-right:16px;">
+        <div id="session-exercise-label" style="display:inline-block; color:#001F3F; font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px;">Set 1 of 3</div>
+        <h3 id="session-exercise-name" style="font-size:1.6rem; font-weight:800; color:#001F3F; margin:0 0 4px; text-transform:capitalize; letter-spacing:-0.5px; line-height:1.1;">Exercise Name</h3>
+        <p id="session-muscle-label" style="font-size:0.9rem; font-weight:600; color:#64748b; margin:0; text-transform:capitalize;"></p>
+      </div>
+      
+      <!-- Controls (Right) -->
+      <div style="display:flex; gap:12px;">
+        <button id="pauseBtn" onclick="togglePause()" style="background:rgba(255,255,255,0.9); color:#001F3F; width:48px; height:48px; border-radius:50%; border:1px solid rgba(0,31,63,0.1); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05);" aria-label="Pause/Resume">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+        <button onclick="skipCurrentExercise()" style="background:#001F3F; color:#ffffff; width:48px; height:48px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow: 0 4px 12px rgba(0,31,63,0.2);" aria-label="Skip">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        </button>
+      </div>
+      
+    </div>
+    
+    <!-- Progress Bar -->
+    <div style="height:5px; background:#e2e8f0; border-radius:5px; overflow:hidden;">
+      <div class="timer-bar-fill" style="height:100%; width:100%; background:#001F3F; border-radius:5px; transition:width 1s linear;"></div>
+    </div>
+    
+  </div>
+</div>
+
+<!-- ─────────────────── SESSION COMPLETE ─────────────────── -->
+<div class="screen" id="screen-session-complete">
+  <div class="complete-bg">
+    <div class="complete-orb complete-orb--1"></div>
+    <div class="complete-orb complete-orb--2"></div>
+  </div>
+  <div class="complete-content">
+    <div class="complete-icon" style="background:var(--purple); color:#fff; border-radius:50%; width:80px; height:80px; display:flex; align-items:center; justify-content:center;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <h1 class="complete-title">Nicely done,<br/><span id="complete-name">Athlete</span>!</h1>
+    <p class="complete-sub">You crushed your <span id="complete-routine">Workout</span> session!</p>
+
+    <div class="complete-stats-grid">
+      <div class="complete-stat">
+        <span class="complete-stat-val" id="complete-time">0 min</span>
+        <span class="complete-stat-lbl">Duration</span>
+      </div>
+      <div class="complete-stat">
+        <span class="complete-stat-val" id="complete-cal">0 kcal</span>
+        <span class="complete-stat-lbl">Burned</span>
+      </div>
+      <div class="complete-stat">
+        <span class="complete-stat-val" id="complete-count">0</span>
+        <span class="complete-stat-lbl">Completed</span>
+      </div>
+      <div class="complete-stat">
+        <span class="complete-stat-val" id="complete-streak">0 days</span>
+        <span class="complete-stat-lbl">Day streak</span>
+      </div>
+    </div>
+
+    <!-- Mood check -->
+    <div class="mood-check">
+      <p>How do you feel?</p>
+      <div class="mood-options">
+        <button class="mood-btn" style="font-size:0.8rem; padding:8px 12px; border-radius:8px; border:1px solid var(--border);">Great</button>
+        <button class="mood-btn" style="font-size:0.8rem; padding:8px 12px; border-radius:8px; border:1px solid var(--border);">Good</button>
+        <button class="mood-btn" style="font-size:0.8rem; padding:8px 12px; border-radius:8px; border:1px solid var(--border);">Okay</button>
+        <button class="mood-btn" style="font-size:0.8rem; padding:8px 12px; border-radius:8px; border:1px solid var(--border);">Tired</button>
+      </div>
+    </div>
+
+    <div class="complete-actions">
+      <button class="btn btn--primary" onclick="navigate('home')">Back to Home</button>
+      <button class="btn btn--ghost" onclick="navigate('explore')">Find Next Workout</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────── STATS ─────────────────── -->
+
+
+<!-- ─────────────────── DIET DASHBOARD ─────────────────── -->
+<div class="screen" id="screen-diet">
+  <div class="status-bar"></div>
+  <header class="page-header">
+    <h2 style="margin-left: 24px;">Diet & Nutrition</h2>
+  </header>
+
+  <main class="scroll-container" style="padding-bottom: 120px;">
+    <!-- Calories Ring -->
+    <div style="padding: 24px; display:flex; gap:20px; align-items:center;">
+      <div style="position:relative; width:120px; height:120px; flex-shrink:0;">
+        <svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg);">
+          <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" stroke-width="8"/>
+          <circle id="diet-cal-ring" cx="60" cy="60" r="54" fill="none" stroke="#001F3F" stroke-width="8" stroke-dasharray="339" stroke-dashoffset="339" stroke-linecap="round" style="transition: stroke-dashoffset 1s ease-out;"/>
+        </svg>
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          <span id="diet-cal-eaten" style="font-size:1.6rem; font-weight:800; color:#001F3F; line-height:1;">0</span>
+          <span style="font-size:0.7rem; color:#64748b; font-weight:600; text-transform:uppercase;">/ <span id="diet-cal-target">2000</span></span>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <h3 style="font-size:1.1rem; color:#001F3F; margin:0 0 12px; font-weight:800;">Macros</h3>
+        
+        <div style="margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:600; color:#64748b; margin-bottom:4px;"><span>Protein</span><span id="diet-pro-text">0g</span></div>
+          <div style="height:6px; background:#e2e8f0; border-radius:3px;"><div id="diet-pro-bar" style="height:100%; width:0%; background:#001F3F; border-radius:3px;"></div></div>
+        </div>
+        
+        <div style="margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:600; color:#64748b; margin-bottom:4px;"><span>Carbs</span><span id="diet-car-text">0g</span></div>
+          <div style="height:6px; background:#e2e8f0; border-radius:3px;"><div id="diet-car-bar" style="height:100%; width:0%; background:var(--purple); border-radius:3px;"></div></div>
+        </div>
+        
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:600; color:#64748b; margin-bottom:4px;"><span>Fat</span><span id="diet-fat-text">0g</span></div>
+          <div style="height:6px; background:#e2e8f0; border-radius:3px;"><div id="diet-fat-bar" style="height:100%; width:0%; background:#f59e0b; border-radius:3px;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="padding: 0 24px 24px; display:flex; gap:16px;">
+      <button style="flex:1; padding:16px; background:#001F3F; color:#fff; border-radius:12px; border:none; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:700; cursor:pointer;" onclick="document.getElementById('diet-file-input').click()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Scan Meal
+      </button>
+      <input type="file" id="diet-file-input" accept="image/*" capture="environment" style="display:none;" onchange="DietService.handleScan(event)">
+      
+      <button style="flex:1; padding:16px; background:#fff; color:#001F3F; border:2px solid #e2e8f0; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:700; cursor:pointer;" onclick="DietUI.showManualEntry()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Manual
+      </button>
+    </div>
+    <p style="text-align:center; font-size:0.75rem; color:#94a3b8; margin-top:-10px; margin-bottom:24px; padding:0 24px;">Privacy Note: Calorie estimates from photos are approximate — please adjust portions as needed for accuracy.</p>
+
+    <!-- Food Log List -->
+    <div style="padding: 0 24px;">
+      <h3 style="font-size:1.2rem; color:#001F3F; font-weight:800; margin-bottom:16px;">Today's Log</h3>
+      <div id="diet-log-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ─────────────────── DIET SCAN CONFIRMATION ─────────────────── -->
+<div class="screen" id="screen-diet-scan">
+  <header class="page-header">
+    <button class="back-btn" onclick="navigate('diet')" aria-label="Cancel">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#001F3F" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <h2>Confirm Meal</h2>
+    <div style="width:20px;"></div>
+  </header>
+  <main class="scroll-container" style="padding-bottom: 120px;">
+    
+    <div style="padding:24px;">
+      <div style="width:100%; height:200px; background:#f1f5f9; border-radius:12px; overflow:hidden; margin-bottom:24px;">
+        <img id="scan-preview-img" src="" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+      
+      <div id="scan-items-container" style="display:flex; flex-direction:column; gap:16px; margin-bottom:24px;">
+        <!-- Editable items go here -->
+      </div>
+      
+      <div style="background:#f8fafc; padding:16px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; font-weight:800; color:#001F3F; font-size:1.1rem;">
+          <span>Total Calories:</span>
+          <span id="scan-total-cal">0 kcal</span>
+        </div>
+      </div>
+      
+      <button class="btn btn--primary" style="width:100%; font-size:1.1rem; padding:16px;" onclick="DietService.confirmLog()">Log This Meal</button>
+    </div>
+  </main>
+</div>
+
+<!-- DIET LOADING OVERLAY -->
+<div id="diet-loading-overlay" style="display:none; position:fixed; inset:0; background:rgba(255,255,255,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
+  <div class="spinner" style="width:50px; height:50px; border:4px solid #e2e8f0; border-top:4px solid #001F3F; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:24px;"></div>
+  <h2 style="font-size:1.4rem; color:#001F3F; font-weight:800; margin-bottom:8px;">Analyzing Meal...</h2>
+  <p style="color:#64748b; text-align:center; line-height:1.5;">Identifying ingredients and calculating nutrition breakdown.</p>
+</div>
+
+<!-- WEIGHT TRACKER MODAL (Injected at bottom) -->
+<div id="weight-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; width:100%; max-width:400px; border-radius:16px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+    <h3 style="color:#001F3F; font-size:1.4rem; font-weight:800; margin-bottom:16px;">Log Weight</h3>
+    <input type="number" id="weight-input" placeholder="Weight (kg)" style="width:100%; padding:14px; border:2px solid #e2e8f0; border-radius:8px; font-size:1.1rem; font-weight:600; margin-bottom:24px;">
+    <div style="display:flex; gap:12px;">
+      <button style="flex:1; padding:14px; background:#f1f5f9; color:#64748b; border:none; border-radius:8px; font-weight:700; cursor:pointer;" onclick="document.getElementById('weight-modal').style.display='none'">Cancel</button>
+      <button style="flex:1; padding:14px; background:#001F3F; color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer;" onclick="DietService.saveWeight()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANUAL DIET ENTRY MODAL WITH AI ESTIMATION -->
+<div id="manual-diet-modal" onclick="if(event.target === this) DietUI.closeManualEntry()">
+  <div class="manual-diet-card">
+    <!-- Header -->
+    <div class="mdm-header">
+      <div class="mdm-header-left">
+        <div class="mdm-icon-bubble">🥗</div>
+        <div>
+          <h3 class="mdm-title">Log Meal with AI</h3>
+          <p class="mdm-sub">Type food &amp; weight; AI calculates calories &amp; macros</p>
+        </div>
+      </div>
+      <button type="button" class="mdm-close-btn" onclick="DietUI.closeManualEntry()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Meal Time Selector -->
+    <div class="mdm-group">
+      <label class="mdm-label">Meal Time</label>
+      <div class="mdm-meal-grid">
+        <button type="button" class="mdm-meal-btn active" onclick="DietUI.setManualMealType('Breakfast', this)">🌅 Breakfast</button>
+        <button type="button" class="mdm-meal-btn" onclick="DietUI.setManualMealType('Lunch', this)">☀️ Lunch</button>
+        <button type="button" class="mdm-meal-btn" onclick="DietUI.setManualMealType('Dinner', this)">🌙 Dinner</button>
+        <button type="button" class="mdm-meal-btn" onclick="DietUI.setManualMealType('Snack', this)">🥪 Snack</button>
+      </div>
+    </div>
+
+    <!-- Food Name Input -->
+    <div class="mdm-group">
+      <label class="mdm-label">Food Item / Dish Name</label>
+      <input type="text" id="manual-food-name" placeholder="e.g. Chicken Biryani, Grilled Salmon, Oatmeal" 
+             oninput="DietUI.onManualInputChange()" 
+             onkeydown="if(event.key==='Enter') DietUI.calculateManualNutrition()"
+             class="mdm-input">
+      <!-- Quick Suggestions Chips -->
+      <div class="mdm-chips">
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickFood('Chicken Breast', '150', 'grams')">Chicken Breast</button>
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickFood('White Rice (Cooked)', '200', 'grams')">White Rice</button>
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickFood('Boiled Eggs', '2', 'pieces')">2 Boiled Eggs</button>
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickFood('Oatmeal with Milk', '1', 'cups')">Oatmeal</button>
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickFood('Greek Yogurt', '170', 'grams')">Greek Yogurt</button>
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickFood('Mixed Green Salad', '1', 'servings')">Green Salad</button>
+      </div>
+    </div>
+
+    <!-- Portion / Weight Input -->
+    <div class="mdm-group">
+      <label class="mdm-label">Portion / Weight Eaten</label>
+      <div class="mdm-row">
+        <input type="number" id="manual-food-weight" value="150" min="1" max="5000" placeholder="150" 
+               oninput="DietUI.onManualInputChange()"
+               onkeydown="if(event.key==='Enter') DietUI.calculateManualNutrition()"
+               class="mdm-input" style="flex:1;">
+        <select id="manual-food-unit" class="mdm-select" onchange="DietUI.onManualInputChange()" style="width: 125px;">
+          <option value="grams" selected>grams (g)</option>
+          <option value="ml">ml</option>
+          <option value="oz">oz</option>
+          <option value="pieces">piece(s)</option>
+          <option value="cups">cup(s)</option>
+          <option value="servings">serving(s)</option>
+        </select>
+      </div>
+      <!-- Quick Weight Chips -->
+      <div class="mdm-chips">
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickWeight(50)">50g</button>
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickWeight(100)">100g</button>
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickWeight(150)">150g</button>
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickWeight(200)">200g</button>
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickWeight(250)">250g</button>
+        <button type="button" class="mdm-chip" onclick="DietUI.setQuickWeight(300)">300g</button>
+      </div>
+    </div>
+
+    <!-- AI Calculate Button -->
+    <button type="button" id="manual-calc-btn" class="manual-ai-calc-btn" onclick="DietUI.calculateManualNutrition()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      <span id="manual-calc-btn-text">Calculate Calories with AI</span>
+    </button>
+
+    <!-- AI Calculated Result Card -->
+    <div id="manual-calc-result" class="mdm-result-card" style="display:none;">
+      <div class="mdm-result-top">
+        <div class="mdm-result-cal-wrap">
+          <span class="mdm-result-cal-num" id="manual-res-cals">0</span>
+          <span class="mdm-result-cal-lbl">kcal</span>
+        </div>
+        <span class="mdm-result-badge">✦ Smart Verified</span>
+      </div>
+      <div class="mdm-macro-grid">
+        <div class="mdm-macro-box">
+          <span class="mdm-macro-lbl">Protein</span>
+          <div class="mdm-macro-val" id="manual-res-pro">0g</div>
+        </div>
+        <div class="mdm-macro-box">
+          <span class="mdm-macro-lbl">Carbs</span>
+          <div class="mdm-macro-val" id="manual-res-car">0g</div>
+        </div>
+        <div class="mdm-macro-box">
+          <span class="mdm-macro-lbl">Fat</span>
+          <div class="mdm-macro-val" id="manual-res-fat">0g</div>
+        </div>
+      </div>
+      <p class="mdm-result-note" id="manual-res-note">Analyzing nutrition profile...</p>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="mdm-footer">
+      <button type="button" class="mdm-btn-cancel" onclick="DietUI.closeManualEntry()">Cancel</button>
+      <button type="button" class="mdm-btn-log" id="manual-log-btn" onclick="DietUI.saveManualDietEntry()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Log Meal
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────── PROFILE ─────────────────── -->
+<div class="screen" id="screen-profile">
+  <div class="status-bar"></div>
+  
+  <!-- Live Sync Toast Notification -->
+  <div id="prof-sync-toast" class="prof-sync-toast">✓ Profile synced</div>
+  
+  <!-- Profile Hero Header -->
+  <div class="profile-hero-card">
+    <div class="profile-hero-top">
+      <div class="profile-avatar-container" onclick="AvatarService.openModal()" style="cursor:pointer;" title="Change Avatar">
+        <div class="profile-avatar-circle" id="prof-header-avatar"></div>
+        <button class="profile-avatar-edit-btn" onclick="event.stopPropagation(); AvatarService.openModal();" aria-label="Change Avatar">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+      </div>
+      <div class="profile-identity">
+        <div class="profile-name-row">
+          <h2 class="profile-display-name" id="prof-header-name">Athlete</h2>
+          <span class="profile-badge-pro" id="prof-header-badge">FlowFit Member</span>
+        </div>
+        <p class="profile-subtitle" id="prof-header-subtitle">Consistent &amp; Goal-Driven</p>
+      </div>
+    </div>
+
+    <!-- Quick Stats Metric Strip -->
+    <div class="profile-strip-grid">
+      <div class="profile-strip-item">
+        <span class="psi-icon psi-icon--amber">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        </span>
+        <div class="psi-info">
+          <span class="psi-val" id="prof-strip-streak">0d</span>
+          <span class="psi-lbl">Streak</span>
+        </div>
+      </div>
+      <div class="profile-strip-item">
+        <span class="psi-icon psi-icon--sky">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+        </span>
+        <div class="psi-info">
+          <span class="psi-val" id="prof-strip-weight">75 kg</span>
+          <span class="psi-lbl">Weight</span>
+        </div>
+      </div>
+      <div class="profile-strip-item">
+        <span class="psi-icon psi-icon--emerald">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </span>
+        <div class="psi-info">
+          <span class="psi-val" id="prof-strip-target">68 kg</span>
+          <span class="psi-lbl">Target</span>
+        </div>
+      </div>
+      <div class="profile-strip-item">
+        <span class="psi-icon psi-icon--violet">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        </span>
+        <div class="psi-info">
+          <span class="psi-val" id="prof-strip-cal">2,200</span>
+          <span class="psi-lbl">Diet Goal</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="scroll-container profile-main-content">
+    <!-- Card 1: Weight Tracking & Trend -->
+    <div class="prof-card">
+      <div class="prof-card-header">
+        <div class="prof-card-title-wrap">
+          <div class="prof-card-icon-bubble prof-bubble--sky">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+          </div>
+          <div>
+            <h3 class="prof-card-title">Weight Tracking</h3>
+            <p class="prof-card-sub" id="prof-weight-sub">Track progress toward your goal weight</p>
+          </div>
+        </div>
+        <button class="prof-btn-action" onclick="DietUI.openWeightModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Log Weight
+        </button>
+      </div>
+
+      <!-- Weight KPIs row -->
+      <div class="prof-kpi-row">
+        <div class="prof-kpi-box">
+          <span class="prof-kpi-lbl">Current</span>
+          <span class="prof-kpi-val" id="prof-kpi-curr">75 <small>kg</small></span>
+        </div>
+        <div class="prof-kpi-box">
+          <span class="prof-kpi-lbl">Target</span>
+          <span class="prof-kpi-val" id="prof-kpi-target">68 <small>kg</small></span>
+        </div>
+        <div class="prof-kpi-box">
+          <span class="prof-kpi-lbl">Difference</span>
+          <span class="prof-kpi-val" id="prof-kpi-diff">-7 <small>kg</small></span>
+        </div>
+        <div class="prof-kpi-box">
+          <span class="prof-kpi-lbl">BMI</span>
+          <span class="prof-kpi-val" id="prof-kpi-bmi">24.5</span>
+          <span class="prof-kpi-tag" id="prof-kpi-bmi-tag">Normal</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Daily Fitness Targets (Active Time & Burn) -->
+    <div class="prof-card">
+      <div class="prof-card-header">
+        <div class="prof-card-title-wrap">
+          <div class="prof-card-icon-bubble prof-bubble--emerald">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </div>
+          <div>
+            <h3 class="prof-card-title">Daily Fitness Goals</h3>
+            <p class="prof-card-sub">Drives your Home progress ring &amp; weekly charts</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="prof-targets-grid">
+        <!-- Target Mins Box -->
+        <div class="prof-target-item">
+          <div class="pti-top">
+            <span class="pti-label">Active Time Goal</span>
+            <span class="pti-val-preview" id="preview-target-mins">30 min</span>
+          </div>
+          <div class="pti-input-wrap">
+            <input type="number" id="prof-target-mins" value="30" min="5" max="300" 
+                   oninput="const p = document.getElementById('preview-target-mins'); if (p) p.innerText = (this.value || 30) + ' min';"
+                   onkeydown="if(event.key==='Enter'){ AppDataUI.saveGoalsChanges(); this.blur(); }"
+                   class="prof-number-input">
+            <span class="pti-unit">min / day</span>
+          </div>
+          <div class="prof-chip-presets">
+            <button type="button" class="preset-chip" onclick="AppDataUI.setQuickTargetMins(20)">20m</button>
+            <button type="button" class="preset-chip" onclick="AppDataUI.setQuickTargetMins(30)">30m</button>
+            <button type="button" class="preset-chip" onclick="AppDataUI.setQuickTargetMins(45)">45m</button>
+            <button type="button" class="preset-chip" onclick="AppDataUI.setQuickTargetMins(60)">60m</button>
+          </div>
+        </div>
+
+        <!-- Target Burn Box -->
+        <div class="prof-target-item">
+          <div class="pti-top">
+            <span class="pti-label">Calorie Burn Goal</span>
+            <span class="pti-val-preview" id="preview-target-burn">300 kcal</span>
+          </div>
+          <div class="pti-input-wrap">
+            <input type="number" id="prof-target-burn" value="300" min="50" max="2500" 
+                   oninput="const p = document.getElementById('preview-target-burn'); if (p) p.innerText = (this.value || 300) + ' kcal';"
+                   onkeydown="if(event.key==='Enter'){ AppDataUI.saveGoalsChanges(); this.blur(); }"
+                   class="prof-number-input">
+            <span class="pti-unit">kcal / day</span>
+          </div>
+          <div class="prof-chip-presets">
+            <button type="button" class="preset-chip" onclick="AppDataUI.setQuickTargetBurn(250)">250</button>
+            <button type="button" class="preset-chip" onclick="AppDataUI.setQuickTargetBurn(350)">350</button>
+            <button type="button" class="preset-chip" onclick="AppDataUI.setQuickTargetBurn(500)">500</button>
+            <button type="button" class="preset-chip" onclick="AppDataUI.setQuickTargetBurn(750)">750</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dedicated Goals Save Button -->
+      <button type="button" class="prof-card-save-btn" id="prof-save-goals-btn" onclick="AppDataUI.saveGoalsChanges()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Confirm Daily Goals</span>
+      </button>
+    </div>
+
+    <!-- Card 3: Body & Personal Profile -->
+    <div class="prof-card">
+      <div class="prof-card-header">
+        <div class="prof-card-title-wrap">
+          <div class="prof-card-icon-bubble prof-bubble--indigo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <h3 class="prof-card-title">Personal &amp; Body Stats</h3>
+            <p class="prof-card-sub">Used for scientific calorie &amp; workout calculations</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="prof-form-grid">
+        <!-- Display Name (Clean full width input) -->
+        <div class="prof-form-group span-2">
+          <label class="prof-field-label">Display Name</label>
+          <div class="prof-input-icon-wrap">
+            <span class="prof-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <input type="text" id="prof-username" value="Athlete" 
+                   onkeydown="if(event.key==='Enter'){ AppDataUI.saveProfileStatsChanges(); this.blur(); }"
+                   class="prof-text-input" placeholder="Your Name">
+          </div>
+        </div>
+
+        <!-- Age -->
+        <div class="prof-form-group">
+          <label class="prof-field-label">Age (years)</label>
+          <div class="prof-input-icon-wrap">
+            <span class="prof-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" y2="6"/><line x1="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            </span>
+            <input type="number" id="prof-age" value="30" min="10" max="100" 
+                   oninput="AppDataUI.previewMetabolicCalculation()"
+                   onkeydown="if(event.key==='Enter'){ AppDataUI.saveProfileStatsChanges(); this.blur(); }"
+                   class="prof-text-input">
+          </div>
+        </div>
+
+        <!-- Gender -->
+        <div class="prof-form-group">
+          <label class="prof-field-label">Gender</label>
+          <div class="prof-input-icon-wrap">
+            <span class="prof-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+            </span>
+            <select id="prof-gender" onchange="AppDataUI.previewMetabolicCalculation()" class="prof-select-input">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Height -->
+        <div class="prof-form-group">
+          <label class="prof-field-label">Height (cm)</label>
+          <div class="prof-input-icon-wrap">
+            <span class="prof-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4-4 4 4"/><path d="m8 21 4 4 4-4"/><path d="M12 1v22"/></svg>
+            </span>
+            <input type="number" id="prof-height" value="175" min="80" max="250" 
+                   oninput="AppDataUI.previewMetabolicCalculation()"
+                   onkeydown="if(event.key==='Enter'){ AppDataUI.saveProfileStatsChanges(); this.blur(); }"
+                   class="prof-text-input">
+          </div>
+        </div>
+
+        <!-- Target Weight -->
+        <div class="prof-form-group">
+          <label class="prof-field-label">Target Weight (kg)</label>
+          <div class="prof-input-icon-wrap">
+            <span class="prof-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </span>
+            <input type="number" id="prof-target" value="68" min="30" max="300" 
+                   oninput="AppDataUI.previewMetabolicCalculation()"
+                   onkeydown="if(event.key==='Enter'){ AppDataUI.saveProfileStatsChanges(); this.blur(); }"
+                   class="prof-text-input">
+          </div>
+        </div>
+
+        <!-- Activity Level -->
+        <div class="prof-form-group span-2">
+          <label class="prof-field-label">Activity Level</label>
+          <div class="prof-input-icon-wrap">
+            <span class="prof-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </span>
+            <select id="prof-activity" onchange="AppDataUI.previewMetabolicCalculation()" class="prof-select-input">
+              <option value="sedentary">Sedentary (Little or no exercise)</option>
+              <option value="light">Lightly Active (1-3 days/week)</option>
+              <option value="moderate">Moderately Active (3-5 days/week)</option>
+              <option value="active" selected>Active (6-7 days/week)</option>
+              <option value="very">Very Active (Twice daily / heavy athletic)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Fitness Goal -->
+        <div class="prof-form-group span-2">
+          <label class="prof-field-label">Primary Fitness Goal</label>
+          <div class="prof-input-icon-wrap">
+            <span class="prof-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7"/><path d="M14 14.66V17c0 .55.45 1 1 1h2"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            </span>
+            <select id="prof-goal" onchange="AppDataUI.previewMetabolicCalculation()" class="prof-select-input">
+              <option value="lose" selected>Lose Weight (-500 kcal deficit)</option>
+              <option value="maintain">Maintain Weight (Caloric balance)</option>
+              <option value="gain">Build Muscle (+300 kcal surplus)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Calculated Nutrition Insights Banner -->
+      <div class="prof-insight-card">
+        <div class="pic-header">
+          <span class="pic-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Scientific Metabolic Calculation
+          </span>
+          <span class="pic-badge">Mifflin-St Jeor</span>
+        </div>
+        <div class="pic-grid">
+          <div class="pic-item">
+            <span class="pic-lbl">Basal Rate (BMR)</span>
+            <span class="pic-val" id="prof-meta-bmr">1,720 kcal</span>
+          </div>
+          <div class="pic-item">
+            <span class="pic-lbl">Maintenance (TDEE)</span>
+            <span class="pic-val" id="prof-meta-tdee">2,450 kcal</span>
+          </div>
+          <div class="pic-item pic-item--primary">
+            <span class="pic-lbl">Daily Target Diet</span>
+            <span class="pic-val" id="prof-meta-target">1,950 kcal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirm & Apply Changes Button (Positioned cleanly at bottom of stats) -->
+      <button type="button" class="prof-btn-confirm" id="prof-btn-confirm" onclick="AppDataUI.saveProfileStatsChanges()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Confirm Profile &amp; Body Stats</span>
+      </button>
+    </div>
+
+    <!-- Card 4: Preferences & AI Settings -->
+    <div class="prof-card">
+      <div class="prof-card-header">
+        <div class="prof-card-title-wrap">
+          <div class="prof-card-icon-bubble prof-bubble--slate">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </div>
+          <div>
+            <h3 class="prof-card-title">Preferences &amp; AI Integration</h3>
+            <p class="prof-card-sub">Manage your AI Coach connection</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="prof-settings-list">
+        <!-- AI Key -->
+        <div class="prof-setting-row">
+          <div class="psr-left">
+            <span class="psr-title">AI Assistant API Key</span>
+            <span class="psr-status" id="prof-api-status">Checking...</span>
+          </div>
+          <button class="prof-btn-outline" onclick="VoiceAssistant.promptApiKey(); AppDataUI.renderProfile();">
+            Configure
+          </button>
+        </div>
+
+        <!-- Clear Session -->
+        <div class="prof-setting-row">
+          <div class="psr-left">
+            <span class="psr-title">Reset Active Session</span>
+            <span class="psr-status">Clears any paused routine state</span>
+          </div>
+          <button class="prof-btn-outline" onclick="AppDataUI.clearActiveSession()">
+            Reset
+          </button>
+        </div>
+
+        <!-- Account Status -->
+        <div class="prof-setting-row">
+          <div class="psr-left">
+            <span class="psr-title" id="prof-account-type">Account Status</span>
+            <span class="psr-status" id="prof-account-detail">Guest Account</span>
+          </div>
+        </div>
+
+        <!-- Log Out -->
+        <div class="prof-setting-row">
+          <div class="psr-left">
+            <span class="psr-title" style="color:#DC2626;">Log Out / Switch Account</span>
+            <span class="psr-status">Return to profile onboarding</span>
+          </div>
+          <button class="prof-btn-outline" style="color:#DC2626; border-color:#FECACA;" onclick="logout()">
+            Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 100px;"></div>
+  </main>
+</div> <!-- end of screen-profile -->
+  <nav class="bottom-nav" id="global-nav" role="navigation" aria-label="Main navigation">
+    <button class="nav-item nav-item--active" data-tab="home" onclick="navigate('home')" aria-label="Home">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" data-tab="explore" onclick="navigate('explore')" aria-label="Explore">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Explore</span>
+    </button>
+    <button class="nav-item nav-item--fab" onclick="navigate('voice-assistant')" aria-label="Voice Assistant" data-tab="voice-assistant">
+      <div class="fab-inner">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" x2="12" y1="19" y2="22"/>
+        </svg>
+      </div>
+    </button>
+    <button class="nav-item" data-tab="diet" onclick="navigate('diet')" aria-label="Diet">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+      <span>Diet</span>
+    </button>
+    <button class="nav-item" data-tab="profile" onclick="navigate('profile')" aria-label="Profile">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </button>
+  </nav>
+</div> <!-- END APP CONTAINER -->
+
+<script src="voice-assistant.js"></script>
+<script src="ai-workout.js"></script>
+<script src="diet.js"></script>
+<script src="avatar-service.js"></script>
+<script src="app-data.js"></script>
+<script src="music-service.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
